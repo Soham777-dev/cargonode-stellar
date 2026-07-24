@@ -1,0 +1,16 @@
+# Railway Project Configuration
+# Project ID: 5cc5d4b8-aa32-4e6a-b0c9-d3538b20add0
+
+[build]
+builder = "nixpacks"
+buildCommand = "cd backend && npm install && npm run build"
+
+[deploy]
+startCommand = "cd backend && node dist/index.js"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[deploy.healthcheck]
+path = "/api/health"
+timeout = 30
+interval = 60

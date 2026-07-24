@@ -1,13 +1,16 @@
 # CargoNode
 
-Smart escrow payments for freight logistics, powered by Stellar and Soroban.
+**Smart escrow payments for freight logistics, powered by Stellar and Soroban.**
 
 > **Decentralized logistics payment platform** — Lock shipment payments in a Soroban smart contract. Drivers get paid instantly upon delivery confirmation. No intermediaries.
 
+**🔗 GitHub Repository**: [https://github.com/Soham777-dev/cargonode-stellar](https://github.com/Soham777-dev/cargonode-stellar)
+
 ## Live Demo
 
-- **Frontend**: [cargonode.vercel.app](https://cargonode.vercel.app) (testnet)
-- **Contract**: [`CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH)
+- **Frontend**: [https://cargonode-stellar.vercel.app/](https://cargonode-stellar.vercel.app/) (testnet)
+- **Escrow Contract**: [`CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH`](https://stellar.expert/explorer/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH)
+- **USDC Token**: [`CAATNNYENLGM6JUS522SLKU2BYHHLN5PYI7XNRJXP7CE2KESE7P52FW5`](https://stellar.expert/explorer/testnet/contract/CAATNNYENLGM6JUS522SLKU2BYHHLN5PYI7XNRJXP7CE2KESE7P52FW5)
 
 ## Level 4 Submission Proofs
 
@@ -176,11 +179,15 @@ POST /api/shipments
 
 ## Contributing
 
-1. Fork the repository
+1. Fork the repository: [https://github.com/Soham777-dev/cargonode-stellar](https://github.com/Soham777-dev/cargonode-stellar)
 2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
+
+## Repository
+
+**GitHub**: [https://github.com/Soham777-dev/cargonode-stellar](https://github.com/Soham777-dev/cargonode-stellar)
 
 ## License
 

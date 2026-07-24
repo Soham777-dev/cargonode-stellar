@@ -1,31 +1,117 @@
-# Level 4 Proof of User Wallet Interactions
+# Proof of User Wallet Interactions
 
-This document details verified testnet wallet interactions performed by onboarded users on the CargoNode platform on Stellar Testnet.
-
-## User Wallet Onboarding & Interaction Matrix (10+ Users)
-
-All transactions below interact directly with the deployed Soroban Escrow Contract on Stellar Testnet:
-`CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH`
-
-| # | User Address | Role | Operation | Amount (USDC) | Status | Transaction Hash / Explorer Link |
-|---|--------------|------|-----------|---------------|--------|----------------------------------|
-| 1 | `GC2YSDUFB3O24X2...` | Shipper | Create Shipment Escrow | $250.00 | Confirmed | [`tx/86d913c...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 2 | `GAW5QO2J91XZ01...` | Driver | Accept Shipment | - | Confirmed | [`tx/435c74d...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 3 | `GC2YSDUFB3O24X2...` | Shipper | Confirm Delivery & Release Payment | $250.00 | Completed | [`tx/95c9365...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 4 | `GB7N2M119XLPO9...` | Shipper | Create Shipment Escrow | $500.00 | Confirmed | [`tx/cai52ui...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 5 | `GD98P11XXKLMNO...` | Driver | Accept Shipment | - | Confirmed | [`tx/55050c2...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 6 | `GB7N2M119XLPO9...` | Shipper | Confirm Delivery & Release Payment | $500.00 | Completed | [`tx/c0a61a8...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 7 | `GAA109XXYYZZAA...` | Shipper | Create Shipment Escrow | $150.00 | Confirmed | [`tx/0a38ea0...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 8 | `GDF8899AABBCCD...` | Driver | Accept Shipment | - | Confirmed | [`tx/028882a...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 9 | `GAA109XXYYZZAA...` | Shipper | Confirm Delivery & Release Payment | $150.00 | Completed | [`tx/b411f2d...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 10| `GC991122334455...` | Shipper | Create Shipment Escrow | $320.00 | Confirmed | [`tx/b7977a3...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 11| `GE445566778899...` | Driver | Accept Shipment | - | Confirmed | [`tx/78e1bdb...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
-| 12| `GC991122334455...` | Shipper | Confirm Delivery & Release Payment | $320.00 | Completed | [`tx/96d2f69...`](https://stellar.expert/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH) |
+**Project**: CargoNode  
+**Network**: Stellar Testnet  
+**Submission Requirement**: Minimum 10 unique real users with verified wallet interactions
 
 ---
 
-## Onboarding Process Highlights
+## Instructions for Documenting Real Users
 
-1. **Test Token Distribution**: Onboarded users received test XLM and 100 test USDC directly via the integrated `/api/fund` auto-funder endpoint.
-2. **Freighter Wallet Extension**: Users connected via Freighter wallet to sign Soroban smart contract invocations securely.
-3. **Escrow Flow Validation**: Tested full lifecycle from escrow creation -> driver acceptance -> proof of delivery -> payment release.
+For each real user who tests the application, document:
+
+1. **Wallet Address**: Their Stellar testnet wallet address (starts with G)
+2. **Transaction Hash**: The actual transaction hash from Stellar testnet
+3. **Timestamp**: When the transaction occurred
+4. **Action Performed**: What they did (created shipment, accepted, confirmed, etc.)
+5. **Verification Link**: Link to transaction on Stellar Expert
+
+**How to Verify**:
+- All transactions can be verified on [Stellar Expert Testnet](https://stellar.expert/explorer/testnet)
+- Transaction hashes are real and verifiable on-chain
+
+---
+
+## Real User Interactions
+
+### User 1
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[e.g., Created shipment for Mumbai → Delhi]`
+- **Verification**: `[https://stellar.expert/explorer/testnet/tx/REAL_TX_HASH]`
+
+### User 2
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[e.g., Accepted shipment]`
+- **Verification**: `[https://stellar.expert/explorer/testnet/tx/REAL_TX_HASH]`
+
+### User 3
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 4
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 5
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 6
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 7
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 8
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 9
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+### User 10
+- **Wallet Address**: `[TO BE FILLED WITH REAL USER ADDRESS]`
+- **Transaction Hash**: `[TO BE FILLED WITH REAL TX HASH]`
+- **Timestamp**: `[TO BE FILLED]`
+- **Action**: `[TO BE FILLED]`
+- **Verification**: `[TO BE FILLED]`
+
+---
+
+## How to Onboard Real Users
+
+1. **Recruit Users**: Friends, family, community members, Discord/Telegram groups
+2. **Setup Guide**: Share the user onboarding guide (to be created)
+3. **Wallet Setup**: Help users install Freighter and get testnet XLM
+4. **Fund Accounts**: Provide testnet USDC tokens for transactions
+5. **Guide Through Flow**: Walk them through creating/accepting/confirming shipments
+6. **Document Everything**: Record wallet addresses and transaction hashes
+7. **Verify**: Check all transactions on Stellar Expert
+
+---
+
+## Summary
+
+- **Total Real Users Onboarded**: 0 / 10 (minimum required)
+- **Total Verified Transactions**: 0
+- **Status**: PENDING - Need to recruit and onboard real users
+
+**Note**: This document should ONLY contain real, verifiable user data. No mock/fake data will be accepted for Level 4 submission.

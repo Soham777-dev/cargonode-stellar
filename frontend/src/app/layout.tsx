@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { Analytics } from "@vercel/analytics/react";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export const metadata: Metadata = {
   title: "CargoNode - Smart Escrow Payments for Freight",

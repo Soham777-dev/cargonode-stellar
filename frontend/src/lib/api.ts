@@ -1,4 +1,5 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const DEFAULT_TIMEOUT = 30000; // 30 seconds
 
 // --- Types ---
 
@@ -30,20 +31,71 @@ export interface CreateShipmentResponse {
   status: string;
 }
 
-// --- API Client ---
+export interface ApiError {
+  message: string;
+  code?: string;
+  status?: number;
+  isTimeout?: boolean;
+}
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+// --- API Client with Timeout ---
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(error.error || "API request failed");
+class TimeoutError extends Error {
+  isTimeout = true;
+  constructor(message: string) {
+    super(message);
+    this.name = "TimeoutError";
   }
+}
 
-  return res.json();
+async function request<T>(
+  path: string,
+  options?: RequestInit,
+  timeout: number = DEFAULT_TIMEOUT
+): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: res.statusText }));
+      const apiError: ApiError = {
+        message: error.error || "API request failed",
+        status: res.status,
+        code: error.code,
+      };
+      throw apiError;
+    }
+
+    return res.json();
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+
+    if (err.name === "AbortError") {
+      throw new TimeoutError(
+        "Request timed out after 30 seconds. Please try again."
+      );
+    }
+
+    // Network error
+    if (err instanceof TypeError && err.message.includes("fetch")) {
+      throw {
+        message:
+          "Network error. Please check your connection and try again.",
+        code: "NETWORK_ERROR",
+      } as ApiError;
+    }
+
+    throw err;
+  }
 }
 
 export async function listShipments(

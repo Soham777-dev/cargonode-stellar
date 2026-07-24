@@ -1,41 +1,80 @@
-/**
- * CargoNode Frontend Analytics & Telemetry
- */
+// Analytics helper for tracking custom events
+import { track } from '@vercel/analytics';
 
-export interface AnalyticsEvent {
-  event: string;
-  category?: string;
-  label?: string;
-  value?: number;
-  metadata?: Record<string, any>;
-  timestamp?: string;
-}
+export const analytics = {
+  // Track shipment creation
+  trackShipmentCreated: (data: {
+    shipmentId: string;
+    amount: string;
+    origin: string;
+    destination: string;
+  }) => {
+    track('shipment_created', {
+      shipment_id: data.shipmentId,
+      amount: data.amount,
+      origin: data.origin,
+      destination: data.destination,
+    });
+  },
 
-export function trackEvent(name: string, props: Record<string, any> = {}) {
-  const payload: AnalyticsEvent = {
-    event: name,
-    metadata: props,
-    timestamp: new Date().toISOString(),
-  };
+  // Track shipment acceptance
+  trackShipmentAccepted: (data: {
+    shipmentId: string;
+    driverAddress: string;
+  }) => {
+    track('shipment_accepted', {
+      shipment_id: data.shipmentId,
+      driver: data.driverAddress,
+    });
+  },
 
-  // Log in non-production or for debugging
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[Analytics Event]", payload);
-  }
+  // Track delivery confirmation
+  trackDeliveryConfirmed: (data: {
+    shipmentId: string;
+    amount: string;
+  }) => {
+    track('delivery_confirmed', {
+      shipment_id: data.shipmentId,
+      amount: data.amount,
+    });
+  },
 
-  // Store events in local storage window log for audit / verification
-  try {
-    const logs = JSON.parse(localStorage.getItem("cargonode_analytics_logs") || "[]");
-    logs.push(payload);
-    // Keep max 200 recent events
-    if (logs.length > 200) logs.shift();
-    localStorage.setItem("cargonode_analytics_logs", JSON.stringify(logs));
-  } catch (e) {
-    // Ignore storage quota errors
-  }
+  // Track shipment cancellation
+  trackShipmentCancelled: (data: {
+    shipmentId: string;
+    reason?: string;
+  }) => {
+    track('shipment_cancelled', {
+      shipment_id: data.shipmentId,
+      reason: data.reason || 'user_cancelled',
+    });
+  },
 
-  // Plausible / custom endpoint push if available
-  if (typeof window !== "undefined" && (window as any).plausible) {
-    (window as any).plausible(name, { props });
-  }
-}
+  // Track wallet connection
+  trackWalletConnected: (walletAddress: string) => {
+    track('wallet_connected', {
+      address: walletAddress.substring(0, 8) + '...', // Privacy: only first 8 chars
+    });
+  },
+
+  // Track errors
+  trackError: (error: {
+    type: string;
+    message: string;
+    page?: string;
+  }) => {
+    track('error_occurred', {
+      error_type: error.type,
+      error_message: error.message,
+      page: error.page || 'unknown',
+    });
+  },
+
+  // Track page views (automatic with Vercel Analytics, but can add custom data)
+  trackPageView: (page: string, additionalData?: Record<string, any>) => {
+    track('page_view', {
+      page,
+      ...additionalData,
+    });
+  },
+};
