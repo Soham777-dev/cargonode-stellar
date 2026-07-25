@@ -92,11 +92,28 @@ router.post("/fund", writeRateLimit, async (req, res) => {
   try {
     const { address } = FundSchema.parse(req.body);
 
-    // 1. Fund XLM via Friendbot
-    const friendbotUrl = `https://friendbot.stellar.org?addr=${encodeURIComponent(address)}`;
-    const friendbotRes = await fetch(friendbotUrl);
-    if (!friendbotRes.ok) {
-      throw new Error(`Friendbot failed: ${friendbotRes.status} ${friendbotRes.statusText}`);
+    // 1. Fund XLM via Friendbot (may fail if already funded)
+    let xlmFunded = false;
+    let xlmAlreadyFunded = false;
+    
+    try {
+      const friendbotUrl = `https://friendbot.stellar.org?addr=${encodeURIComponent(address)}`;
+      const friendbotRes = await fetch(friendbotUrl);
+      if (friendbotRes.ok) {
+        xlmFunded = true;
+      } else if (friendbotRes.status === 400) {
+        // Account likely already funded - this is OK
+        xlmAlreadyFunded = true;
+        log.info({ address }, "Account already funded with XLM");
+      } else {
+        throw new Error(`Friendbot failed: ${friendbotRes.status} ${friendbotRes.statusText}`);
+      }
+    } catch (err: any) {
+      if (err.message.includes("400")) {
+        xlmAlreadyFunded = true;
+      } else {
+        throw err;
+      }
     }
 
     // 2. Mint 100 test tokens via deployer
@@ -105,7 +122,11 @@ router.post("/fund", writeRateLimit, async (req, res) => {
 
     if (!deployerSecret || !tokenContractId) {
       log.warn("DEPLOYER_SECRET_KEY or USDC_CONTRACT_ID not set — skipping token mint");
-      return res.json({ xlm_funded: true, tokens_minted: false });
+      return res.json({ 
+        xlm_funded: xlmFunded, 
+        xlm_already_funded: xlmAlreadyFunded,
+        tokens_minted: false 
+      });
     }
 
     const deployerKeypair = StellarSdk.Keypair.fromSecret(deployerSecret);
@@ -135,7 +156,8 @@ router.post("/fund", writeRateLimit, async (req, res) => {
     log.info({ address, tx_hash: result.hash }, "Account funded with XLM + tokens");
 
     res.json({
-      xlm_funded: true,
+      xlm_funded: xlmFunded || xlmAlreadyFunded,
+      xlm_already_funded: xlmAlreadyFunded,
       tokens_minted: true,
       token_amount: "100",
       tx_hash: result.hash,
