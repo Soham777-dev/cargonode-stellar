@@ -25,10 +25,18 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      // Log rejection but don't block the request - just send proper CORS headers
+      log.warn({ origin, allowedOrigins }, 'CORS request from unknown origin');
+      // Return error to reject CORS but still allow the error handler to respond
+      callback(new Error('Not allowed by CORS'), false);
     }
   },
   credentials: true,
