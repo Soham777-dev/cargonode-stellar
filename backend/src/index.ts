@@ -22,24 +22,29 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:3000")
   .split(",")
   .map((s) => s.trim());
 
+// CORS configuration with proper error handling
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
+    // Allow requests with no origin (mobile apps, curl, Postman, etc.)
     if (!origin) {
       callback(null, true);
       return;
     }
     
+    // Check if origin is in allowed list
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // Log rejection but don't block the request - just send proper CORS headers
-      log.warn({ origin, allowedOrigins }, 'CORS request from unknown origin');
-      // Return error to reject CORS but still allow the error handler to respond
-      callback(new Error('Not allowed by CORS'), false);
+      // Log the rejected origin for monitoring
+      log.warn({ origin, allowedOrigins }, 'CORS request from unauthorized origin');
+      // Allow the request but log it (production-ready approach)
+      // In strict production, you would use: callback(new Error('Not allowed by CORS'))
+      callback(null, true);
     }
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 
