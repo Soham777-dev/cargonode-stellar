@@ -584,6 +584,172 @@ router.post("/:shipment_id/cancel", writeRateLimit, async (req, res) => {
   }
 });
 
+// Mark shipment as in transit (driver)
+const InTransitSchema = z.object({
+  driver_address: z.string().length(56),
+});
+
+router.post("/:shipment_id/in-transit", writeRateLimit, async (req, res) => {
+  try {
+    const { shipment_id } = req.params;
+    const body = InTransitSchema.parse(req.body);
+
+    const shipmentCheck = await pool.query(
+      `SELECT s.status, u.stellar_address AS driver_address
+       FROM shipments s
+       LEFT JOIN users u ON s.driver_id = u.id
+       WHERE s.shipment_id = $1`,
+      [shipment_id]
+    );
+
+    if (shipmentCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Shipment not found" });
+    }
+
+    const shipment = shipmentCheck.rows[0];
+    if (shipment.driver_address !== body.driver_address) {
+      return res.status(403).json({ error: "Not assigned driver for this shipment" });
+    }
+
+    if (shipment.status !== "accepted") {
+      return res.status(400).json({ error: `Cannot mark as in transit from '${shipment.status}' status` });
+    }
+
+    await pool.query(
+      `UPDATE shipments SET status = 'in_transit', updated_at = NOW() WHERE shipment_id = $1`,
+      [shipment_id]
+    );
+
+    await pool.query(
+      `INSERT INTO shipments_history (shipment_id, status, notes)
+       SELECT id, 'in_transit', 'Driver marked shipment as in transit' FROM shipments WHERE shipment_id = $1`,
+      [shipment_id]
+    );
+
+    res.json({ shipment_id, status: "in_transit" });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation error", details: err.errors });
+    }
+    log.error({ err }, "Error marking shipment as in transit");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Mark shipment as delivered (driver)
+const DeliveredSchema = z.object({
+  driver_address: z.string().length(56),
+  proof_of_delivery_url: z.string().url().optional(),
+});
+
+router.post("/:shipment_id/delivered", writeRateLimit, async (req, res) => {
+  try {
+    const { shipment_id } = req.params;
+    const body = DeliveredSchema.parse(req.body);
+
+    const shipmentCheck = await pool.query(
+      `SELECT s.status, u.stellar_address AS driver_address
+       FROM shipments s
+       LEFT JOIN users u ON s.driver_id = u.id
+       WHERE s.shipment_id = $1`,
+      [shipment_id]
+    );
+
+    if (shipmentCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Shipment not found" });
+    }
+
+    const shipment = shipmentCheck.rows[0];
+    if (shipment.driver_address !== body.driver_address) {
+      return res.status(403).json({ error: "Not assigned driver for this shipment" });
+    }
+
+    if (shipment.status !== "in_transit" && shipment.status !== "accepted") {
+      return res.status(400).json({ error: `Cannot mark as delivered from '${shipment.status}' status` });
+    }
+
+    await pool.query(
+      `UPDATE shipments 
+       SET status = 'delivered', 
+           proof_of_delivery_url = $2,
+           delivery_date = NOW(),
+           updated_at = NOW() 
+       WHERE shipment_id = $1`,
+      [shipment_id, body.proof_of_delivery_url || null]
+    );
+
+    await pool.query(
+      `INSERT INTO shipments_history (shipment_id, status, notes)
+       SELECT id, 'delivered', 'Driver marked shipment as delivered' FROM shipments WHERE shipment_id = $1`,
+      [shipment_id]
+    );
+
+    res.json({ shipment_id, status: "delivered" });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation error", details: err.errors });
+    }
+    log.error({ err }, "Error marking shipment as delivered");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Cancel shipment
+router.post("/:shipment_id/cancel", writeRateLimit, async (req, res) => {
+  try {
+    const { shipment_id } = req.params;
+    const body = CancelSchema.parse(req.body);
+
+    // Verify shipment exists and shipper matches
+    const shipmentCheck = await pool.query(
+      `SELECT s.status, u.stellar_address AS shipper_address
+       FROM shipments s
+       LEFT JOIN users u ON s.shipper_id = u.id
+       WHERE s.shipment_id = $1`,
+      [shipment_id]
+    );
+
+    if (shipmentCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Shipment not found" });
+    }
+
+    const shipment = shipmentCheck.rows[0];
+    if (shipment.shipper_address !== body.shipper_address) {
+      return res.status(403).json({ error: "Not shipper for this shipment" });
+    }
+
+    if (shipment.status !== "created" && shipment.status !== "accepted") {
+      return res.status(400).json({ error: `Cannot cancel shipment in '${shipment.status}' status` });
+    }
+
+    try {
+      const txBuilder = await buildContractInvocation(
+        body.shipper_address,
+        "cancel_shipment",
+        [toAddress(body.shipper_address), toStringScVal(shipment_id)]
+      );
+
+      const xdr = await simulateAndAssemble(txBuilder);
+
+      res.json({ shipment_id, xdr });
+    } catch (xdrErr: any) {
+      log.error({ err: xdrErr.message }, "XDR build failed for cancel");
+      res.status(500).json({ 
+        error: "Wallet not funded. Click 'Get Test Tokens' on this page first.",
+        detail: xdrErr.message 
+      });
+    }
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res
+        .status(400)
+        .json({ error: "Validation error", details: err.errors });
+    }
+    log.error({ err }, "Error building cancel tx");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Get on-chain shipment data
 router.get("/:shipment_id/onchain", readRateLimit, async (req, res) => {
   try {

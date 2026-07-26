@@ -170,6 +170,40 @@ export async function buildCancelTx(
   });
 }
 
+export async function buildCancelTx(
+  shipmentId: string,
+  shipperAddress: string
+): Promise<{ xdr: string }> {
+  return request(`/shipments/${shipmentId}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ shipper_address: shipperAddress }),
+  });
+}
+
+export async function markInTransit(
+  shipmentId: string,
+  driverAddress: string
+): Promise<{ shipment_id: string; status: string }> {
+  return request(`/shipments/${shipmentId}/in-transit`, {
+    method: "POST",
+    body: JSON.stringify({ driver_address: driverAddress }),
+  });
+}
+
+export async function markDelivered(
+  shipmentId: string,
+  driverAddress: string,
+  proofUrl?: string
+): Promise<{ shipment_id: string; status: string }> {
+  return request(`/shipments/${shipmentId}/delivered`, {
+    method: "POST",
+    body: JSON.stringify({ 
+      driver_address: driverAddress,
+      proof_of_delivery_url: proofUrl 
+    }),
+  });
+}
+
 export async function fundAccount(
   address: string
 ): Promise<{ xlm_funded: boolean; xlm_already_funded?: boolean; tokens_minted: boolean; token_amount?: string; tx_hash?: string }> {

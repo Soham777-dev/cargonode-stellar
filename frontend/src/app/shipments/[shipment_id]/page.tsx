@@ -116,7 +116,7 @@ export default function ShipmentDetailPage() {
   };
 
   const handleAction = async (
-    action: "accept" | "confirm" | "cancel"
+    action: "accept" | "confirm" | "cancel" | "in_transit" | "delivered"
   ) => {
     if (!connected || !address || !shipment) return;
 
@@ -124,6 +124,26 @@ export default function ShipmentDetailPage() {
     setStatus(null);
 
     try {
+      // Handle non-blockchain actions (status updates only)
+      if (action === "in_transit") {
+        const { markInTransit } = await import("@/lib/api");
+        await markInTransit(shipmentId, address);
+        setStatus("Shipment marked as in transit!");
+        await loadShipment();
+        setActionLoading(false);
+        return;
+      }
+
+      if (action === "delivered") {
+        const { markDelivered } = await import("@/lib/api");
+        await markDelivered(shipmentId, address);
+        setStatus("Shipment marked as delivered!");
+        await loadShipment();
+        setActionLoading(false);
+        return;
+      }
+
+      // Handle blockchain actions (require XDR signing)
       let xdr: string;
 
       switch (action) {
@@ -329,7 +349,27 @@ export default function ShipmentDetailPage() {
               </button>
             )}
 
-            {shipment.status === "accepted" && isShipper && (
+            {shipment.status === "accepted" && isDriver && (
+              <button
+                onClick={() => handleAction("in_transit")}
+                disabled={actionLoading}
+                className="btn-primary"
+              >
+                {actionLoading ? "Processing..." : "Mark In Transit"}
+              </button>
+            )}
+
+            {(shipment.status === "in_transit" || shipment.status === "accepted") && isDriver && (
+              <button
+                onClick={() => handleAction("delivered")}
+                disabled={actionLoading}
+                className="btn-primary"
+              >
+                {actionLoading ? "Processing..." : "Mark Delivered"}
+              </button>
+            )}
+
+            {(shipment.status === "delivered" || shipment.status === "accepted") && isShipper && (
               <button
                 onClick={() => handleAction("confirm")}
                 disabled={actionLoading}
