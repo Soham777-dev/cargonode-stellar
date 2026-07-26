@@ -172,7 +172,7 @@ export async function buildCancelTx(
 
 export async function fundAccount(
   address: string
-): Promise<{ xlm_funded: boolean; tokens_minted: boolean; token_amount?: string; tx_hash?: string }> {
+): Promise<{ xlm_funded: boolean; xlm_already_funded?: boolean; tokens_minted: boolean; token_amount?: string; tx_hash?: string }> {
   return request("/shipments/fund", {
     method: "POST",
     body: JSON.stringify({ address }),

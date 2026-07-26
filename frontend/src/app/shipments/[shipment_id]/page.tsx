@@ -44,9 +44,19 @@ function DetailTokenFunder({ address }: { address: string }) {
     try {
       const res = await fundAccount(address);
       const parts = [];
-      if (res.xlm_funded) parts.push("XLM funded");
-      if (res.tokens_minted) parts.push(`${res.token_amount} test USDC minted`);
-      if (!res.tokens_minted && res.xlm_funded) parts.push("tokens not configured");
+      
+      if (res.xlm_already_funded) {
+        parts.push("Account already has XLM");
+      } else if (res.xlm_funded) {
+        parts.push("XLM funded");
+      }
+      
+      if (res.tokens_minted) {
+        parts.push(`${res.token_amount} test USDC minted`);
+      } else if (res.xlm_funded || res.xlm_already_funded) {
+        parts.push("tokens not configured");
+      }
+      
       setResult(parts.join(" — "));
     } catch (err: any) {
       setError(err.message || "Funding failed");
