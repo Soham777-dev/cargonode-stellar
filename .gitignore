@@ -21,11 +21,12 @@ contracts/target/
 .env.*.local
 .env.production
 
-# IDE
+# IDE and Kiro
 .vscode/
 .idea/
 *.iml
 *.log
+.kiro/
 
 # OS
 .DS_Store
@@ -46,3 +47,7 @@ coverage/
 # Misc
 *.pem
 *.key
+
+# Internal docs (keep submission docs but remove internal working files)
+VERCEL_FIX_INSTRUCTIONS.md
+RAILWAY_CONFIG_VERIFICATION.md
