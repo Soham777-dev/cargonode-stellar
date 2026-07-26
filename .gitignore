@@ -51,3 +51,4 @@ coverage/
 # Internal docs (keep submission docs but remove internal working files)
 VERCEL_FIX_INSTRUCTIONS.md
 RAILWAY_CONFIG_VERIFICATION.md
+.DS_Store
