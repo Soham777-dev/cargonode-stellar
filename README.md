@@ -53,11 +53,14 @@ CargoNode/
 
 ## How It Works
 
-1. **Shipper** creates a shipment → USDC locked in Soroban escrow contract
-2. **Driver** accepts the shipment and picks up cargo
-3. Cargo is delivered
-4. **Shipper** confirms delivery
-5. Smart contract **automatically releases** USDC to driver's wallet
+**Complete 6-Step Workflow:**
+
+1. **Escrowed** - Shipper creates a shipment → USDC locked in Soroban escrow contract
+2. **Accepted** - Driver accepts the shipment
+3. **In Transit** - Driver marks cargo picked up
+4. **Delivered** - Driver marks delivery complete
+5. **Confirmed** - Shipper confirms delivery
+6. **Completed** - Smart contract **automatically releases** USDC to driver's wallet
 
 ## Quick Start
 
@@ -110,28 +113,107 @@ npm run dev
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/health` | Health check |
+| `GET` | `/api/metrics` | System metrics and telemetry |
 | `GET` | `/api/shipments` | List shipments (query: `address`, `role`) |
 | `GET` | `/api/shipments/:id` | Get shipment details |
 | `POST` | `/api/shipments` | Create shipment |
 | `POST` | `/api/shipments/:id/submit` | Submit signed transaction |
 | `POST` | `/api/shipments/:id/accept` | Build accept transaction |
+| `POST` | `/api/shipments/:id/in-transit` | Mark shipment in transit |
+| `POST` | `/api/shipments/:id/delivered` | Mark shipment delivered |
 | `POST` | `/api/shipments/:id/confirm` | Build confirm transaction |
 | `POST` | `/api/shipments/:id/cancel` | Build cancel transaction |
 | `GET` | `/api/shipments/:id/onchain` | Read on-chain shipment data |
 
 ### Request/Response Examples
 
-**Create Shipment**
+**Health Check**
+```bash
+curl https://cargonode-stellar-production.up.railway.app/api/health
+```
+Response:
 ```json
-POST /api/shipments
 {
-  "shipper_address": "GC2YSDUF...",
-  "driver_address": "GAW5QO2J...",
-  "amount": "100.00",
-  "origin": "Mumbai",
-  "destination": "Delhi",
-  "cargo_description": "Electronics",
-  "cargo_weight_kg": 500
+  "status": "ok",
+  "timestamp": "2026-07-26T06:09:51.605Z",
+  "version": "1.0.0",
+  "network": "testnet"
+}
+```
+
+**System Metrics**
+```bash
+curl https://cargonode-stellar-production.up.railway.app/api/metrics
+```
+Response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-07-26T06:10:19.885Z",
+  "system": {
+    "uptime_seconds": 286,
+    "memory_heap_used_mb": "14.74",
+    "memory_rss_mb": "66.39",
+    "node_version": "v20.20.2",
+    "platform": "linux"
+  },
+  "telemetry": {
+    "total_requests": 2,
+    "total_errors": 0,
+    "error_rate_pct": 0,
+    "avg_latency_ms": 2.5
+  },
+  "database": {
+    "pool_total_connections": 1,
+    "pool_idle_connections": 1,
+    "pool_waiting_clients": 0,
+    "total_shipments_stored": 2
+  },
+  "network": {
+    "stellar_network": "testnet",
+    "soroban_rpc_url": "https://soroban-testnet.stellar.org",
+    "escrow_contract": "CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH"
+  }
+}
+```
+
+**Create Shipment**
+```bash
+curl -X POST https://cargonode-stellar-production.up.railway.app/api/shipments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shipper_address": "GC2YSDUF...",
+    "driver_address": "GAW5QO2J...",
+    "amount": "100.00",
+    "origin": "Mumbai",
+    "destination": "Delhi",
+    "cargo_description": "Electronics",
+    "cargo_weight_kg": 500
+  }'
+```
+Response:
+```json
+{
+  "shipment": {
+    "id": "uuid",
+    "shipment_id": "SHP-ABC123",
+    "status": "created",
+    ...
+  },
+  "xdr": "unsigned_transaction_xdr"
+}
+```
+
+**Submit Signed Transaction**
+```bash
+curl -X POST https://cargonode-stellar-production.up.railway.app/api/shipments/{id}/submit \
+  -H "Content-Type: application/json" \
+  -d '{"signedXdr": "signed_xdr_from_freighter"}'
+```
+Response:
+```json
+{
+  "txHash": "transaction_hash_on_stellar"
 }
 ```
 
