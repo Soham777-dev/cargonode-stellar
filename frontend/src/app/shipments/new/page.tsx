@@ -57,7 +57,7 @@ function TestTokenFunder({ address }: { address: string }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-yellow-800">Need test tokens?</p>
-          <p className="text-xs text-yellow-600">Get free XLM + 100 test USDC for this address</p>
+          <p className="text-xs text-yellow-600">Get free XLM for this address</p>
         </div>
         <button
           onClick={handleFund}
@@ -225,7 +225,7 @@ export default function NewShipmentPage() {
 
         {/* Amount */}
         <div>
-          <label className="label">Payment Amount (USDC)</label>
+          <label className="label">Payment Amount (XLM)</label>
           <input
             type="number"
             step="0.01"

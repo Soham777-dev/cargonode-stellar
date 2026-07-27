@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "CargoNode - Smart Escrow Payments for Freight",
   description:
     "Decentralized logistics payment platform using Stellar and Soroban Smart Contracts. Lock shipments in secure escrow, get paid instantly on delivery.",
-  keywords: ["Stellar", "Soroban", "escrow", "freight", "logistics", "USDC", "blockchain"],
+  keywords: ["Stellar", "Soroban", "escrow", "freight", "logistics", "XLM", "blockchain"],
   openGraph: {
     title: "CargoNode - Smart Escrow Payments for Freight",
     description: "Decentralized logistics payment platform on Stellar",

@@ -346,7 +346,7 @@ router.post("/", writeRateLimit, async (req, res) => {
       return res.status(400).json({ 
         error: "Failed to build blockchain transaction", 
         detail: xdrErr.message,
-        suggestion: "Ensure your account has XLM for transaction fees and USDC token trustline"
+        suggestion: "Ensure your account has XLM for transaction fees and payment amount"
       });
     }
   } catch (err) {

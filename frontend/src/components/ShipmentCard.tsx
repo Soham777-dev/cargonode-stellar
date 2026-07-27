@@ -41,7 +41,7 @@ export function ShipmentCard({ shipment }: { shipment: Shipment }) {
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-400">Amount:</span>
-          <span className="font-semibold text-primary">{shipment.amount} USDC</span>
+          <span className="font-semibold text-primary">{shipment.amount} XLM</span>
         </div>
       </div>
 

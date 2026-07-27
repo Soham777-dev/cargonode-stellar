@@ -78,7 +78,7 @@ function DetailTokenFunder({ address }: { address: string }) {
     <div className="mb-6 p-3 rounded-lg bg-yellow-50 border border-yellow-200 flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-yellow-800">Need test tokens for this wallet?</p>
-        <p className="text-xs text-yellow-600">Get free XLM + 100 test USDC</p>
+        <p className="text-xs text-yellow-600">Get free XLM</p>
       </div>
       <button onClick={handleFund} disabled={loading} className="px-3 py-1.5 text-sm font-medium rounded-md bg-yellow-600 text-white hover:bg-yellow-700 disabled:opacity-50">
         {loading ? "Funding..." : "Get Tokens"}
@@ -278,7 +278,7 @@ export default function ShipmentDetailPage() {
         <div className="card">
           <h3 className="text-sm font-medium text-gray-500 mb-2">Amount</h3>
           <p className="text-2xl font-bold text-primary">
-            {shipment.amount} USDC
+            {shipment.amount} XLM
           </p>
         </div>
         <div className="card">

@@ -30,7 +30,6 @@ pub struct Shipment {
 #[contracttype]
 pub enum DataKey {
     Shipment(String),
-    TokenAddress,
     Deployer,
 }
 
@@ -96,18 +95,13 @@ pub struct CargoNodeEscrow;
 
 #[contractimpl]
 impl CargoNodeEscrow {
-    /// Constructor: set the USDC token contract address and deployer.
-    pub fn __constructor(env: Env, deployer: Address, token_address: Address) {
-        env.storage()
-            .instance()
-            .set(&DataKey::TokenAddress, &token_address);
-        env.storage()
-            .instance()
-            .set(&DataKey::Deployer, &deployer);
+    /// Constructor: set deployer (using native XLM for escrow).
+    pub fn __constructor(env: Env, deployer: Address) {
+        env.storage().instance().set(&DataKey::Deployer, &deployer);
     }
 
-    /// Create a new shipment with escrowed payment.
-    /// Shipper calls this to lock USDC into the contract.
+    /// Create a new shipment with escrowed payment using native XLM.
+    /// Shipper calls this to lock XLM into the contract.
     pub fn create_shipment(
         env: Env,
         shipper: Address,
@@ -128,20 +122,18 @@ impl CargoNodeEscrow {
             return Err(Error::AlreadyExists);
         }
 
-        // Get token address
-        let token_address: Address = env
-            .storage()
-            .instance()
-            .get(&DataKey::TokenAddress)
-            .ok_or(Error::Unauthorized)?;
+        // For native XLM, we use the Stellar Asset Contract (SAC) for native token
+        // The XLM SAC address is derived deterministically
+        let native_token = soroban_sdk::token::Client::new(
+            &env,
+            &Address::from_string(&String::from_str(
+                &env,
+                "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+            )),
+        );
 
-        // Transfer USDC from shipper to this contract (escrow)
-        // Verify transfer succeeds — if it fails, abort before creating shipment
-        let token_client = soroban_sdk::token::Client::new(&env, &token_address);
-        let result = token_client.try_transfer(&shipper, &env.current_contract_address(), &amount);
-        if result.is_err() {
-            return Err(Error::TransferFailed);
-        }
+        // Transfer XLM from shipper to contract
+        native_token.transfer(&shipper, &env.current_contract_address(), &amount);
 
         // Create shipment record
         let shipment = Shipment {
@@ -204,7 +196,7 @@ impl CargoNodeEscrow {
         Ok(())
     }
 
-    /// Shipper confirms delivery. This triggers payment release to driver.
+    /// Shipper confirms delivery. This triggers native XLM payment release to driver.
     pub fn confirm_delivery(
         env: Env,
         shipper: Address,
@@ -227,29 +219,15 @@ impl CargoNodeEscrow {
             return Err(Error::NotShipper);
         }
 
-        // Get token address
-        let token_address: Address = env
-            .storage()
-            .instance()
-            .get(&DataKey::TokenAddress)
-            .ok_or(Error::Unauthorized)?;
-
-        // Verify contract holds sufficient balance before releasing
-        let token_client = soroban_sdk::token::Client::new(&env, &token_address);
-        let contract_balance = token_client.balance(&env.current_contract_address());
-        if contract_balance < shipment.amount {
-            return Err(Error::InsufficientBalance);
-        }
-
-        // Release payment to driver — verify transfer succeeds
-        let result = token_client.try_transfer(
-            &env.current_contract_address(),
-            &shipment.driver,
-            &shipment.amount,
+        // Transfer native XLM from contract to driver
+        let native_token = soroban_sdk::token::Client::new(
+            &env,
+            &Address::from_string(&String::from_str(
+                &env,
+                "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+            )),
         );
-        if result.is_err() {
-            return Err(Error::TransferFailed);
-        }
+        native_token.transfer(&env.current_contract_address(), &shipment.driver, &shipment.amount);
 
         shipment.status = ShipmentStatus::Completed;
         env.storage().persistent().set(&key, &shipment);
@@ -267,7 +245,7 @@ impl CargoNodeEscrow {
         Ok(())
     }
 
-    /// Shipper cancels shipment. Refund only if status is Created or Accepted.
+    /// Shipper cancels shipment. Refund native XLM only if status is Created or Accepted.
     pub fn cancel_shipment(
         env: Env,
         shipper: Address,
@@ -293,29 +271,15 @@ impl CargoNodeEscrow {
             return Err(Error::InvalidStatus);
         }
 
-        // Get token address
-        let token_address: Address = env
-            .storage()
-            .instance()
-            .get(&DataKey::TokenAddress)
-            .ok_or(Error::Unauthorized)?;
-
-        // Verify contract holds sufficient balance before refunding
-        let token_client = soroban_sdk::token::Client::new(&env, &token_address);
-        let contract_balance = token_client.balance(&env.current_contract_address());
-        if contract_balance < shipment.amount {
-            return Err(Error::InsufficientBalance);
-        }
-
-        // Refund to shipper — verify transfer succeeds
-        let result = token_client.try_transfer(
-            &env.current_contract_address(),
-            &shipment.shipper,
-            &shipment.amount,
+        // Refund native XLM to shipper
+        let native_token = soroban_sdk::token::Client::new(
+            &env,
+            &Address::from_string(&String::from_str(
+                &env,
+                "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+            )),
         );
-        if result.is_err() {
-            return Err(Error::TransferFailed);
-        }
+        native_token.transfer(&env.current_contract_address(), &shipment.shipper, &shipment.amount);
 
         let refund_amount = shipment.amount;
         shipment.status = ShipmentStatus::Cancelled;
@@ -351,24 +315,16 @@ mod tests {
     use super::*;
     use soroban_sdk::{testutils::Address as _, Env, String};
 
-    fn create_test_token(env: &Env, to: &Address, amount: i128) -> Address {
-        let admin = Address::generate(env);
-        let sac = env.register_stellar_asset_contract_v2(admin);
-        let client = soroban_sdk::token::StellarAssetClient::new(env, &sac.address());
-        client.mint(to, &amount);
-        sac.address()
-    }
-
     #[test]
     fn test_create_shipment() {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -387,11 +343,11 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -407,11 +363,11 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -428,11 +384,11 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -448,11 +404,11 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -469,11 +425,11 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -488,11 +444,11 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -505,12 +461,12 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
         let wrong_driver = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");
@@ -525,12 +481,12 @@ mod tests {
         let env = Env::default();
         env.mock_all_auths();
 
+        let deployer = Address::generate(&env);
         let shipper = Address::generate(&env);
         let driver = Address::generate(&env);
         let wrong_shipper = Address::generate(&env);
-        let token = create_test_token(&env, &shipper, 10000);
 
-        let contract_id = env.register(CargoNodeEscrow, (shipper.clone(), token));
+        let contract_id = env.register(CargoNodeEscrow, (deployer,));
         let client = CargoNodeEscrowClient::new(&env, &contract_id);
 
         let shipment_id = String::from_str(&env, "SHIP001");

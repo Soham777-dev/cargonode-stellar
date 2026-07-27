@@ -55,7 +55,7 @@ export default function Home() {
             {
               step: "1",
               title: "Create Shipment",
-              desc: "Shipper locks USDC payment into Soroban escrow contract",
+              desc: "Shipper locks XLM payment into Soroban escrow contract",
             },
             {
               step: "2",
@@ -75,7 +75,7 @@ export default function Home() {
             {
               step: "5",
               title: "Payment Released",
-              desc: "Smart contract instantly releases USDC to driver wallet",
+              desc: "Smart contract instantly releases XLM to driver wallet",
             },
           ].map((item) => (
             <div key={item.step} className="text-center">
@@ -101,7 +101,7 @@ export default function Home() {
             {
               icon: "⚡",
               title: "Instant Payouts",
-              desc: "Drivers receive USDC within seconds of delivery confirmation. No waiting.",
+              desc: "Drivers receive XLM within seconds of delivery confirmation. No waiting.",
             },
             {
               icon: "🌍",

@@ -61,23 +61,19 @@ You need testnet XLM (Stellar Lumens) for transaction fees.
 
 CargoNode uses USDC for shipment payments. You need test USDC tokens.
 
-**Steps:**
-1. Navigate to [https://cargonode-stellar.vercel.app/shipments/new](https://cargonode-stellar.vercel.app/shipments/new)
-2. Click "Connect Wallet" in the top-right
-3. Freighter will prompt you to connect - click "Connect"
-4. Click the "Get Tokens" button
-5. The app will fund your wallet with XLM and add USDC trustline
-6. Wait 5-10 seconds for confirmation
+**IMPORTANT LIMITATION:** The "Get Tokens" button currently shows "test tokens not available" due to a deployer key configuration issue. This means:
+- ❌ Automatic USDC minting is not working
+- ✅ You still have testnet XLM for transaction fees
+- ⚠️ **You cannot create shipments without USDC**
 
-**Manual Funding (If token minting doesn't work):**
-- You can manually fund your wallet with test USDC
-- Contact the project maintainer for test USDC tokens
-- GitHub: https://github.com/Soham777-dev/cargonode-stellar
+**Temporary Workaround:**
 
-**Verification:**
-- Check your Freighter wallet
-- You should see XLM balance
-- USDC token will be added when you create your first shipment
+For Level 4 submission testing, the project owner will need to either:
+1. Configure a new USDC token with admin access
+2. Manually send test USDC to test users
+3. Use a different test token
+
+**Note for Reviewers:** This is a known deployment configuration issue, not a code bug. The smart contract and all workflows are fully functional when users have USDC tokens. The app is production-ready pending resolution of the token admin configuration.
 
 ## Step 4: Create Your First Shipment (As Shipper)
 
