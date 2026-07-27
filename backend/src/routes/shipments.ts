@@ -325,7 +325,7 @@ router.post("/", writeRateLimit, async (req, res) => {
       // Native XLM SAC address depends on network
       const nativeTokenAddress = config.networkPassphrase === StellarSdk.Networks.PUBLIC
         ? "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA" // mainnet
-        : "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"; // testnet
+        : "CDMLFMOR6KSRG75DOAV3DFN4ETRXXEORQ5XQDQKJBLQO5EI2XCDL3X6"; // testnet
       
       const nativeToken = new StellarSdk.Contract(nativeTokenAddress);
       const sourceAccount = await rpc.getAccount(body.shipper_address);
