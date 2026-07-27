@@ -170,16 +170,6 @@ export async function buildCancelTx(
   });
 }
 
-export async function buildCancelTx(
-  shipmentId: string,
-  shipperAddress: string
-): Promise<{ xdr: string }> {
-  return request(`/shipments/${shipmentId}/cancel`, {
-    method: "POST",
-    body: JSON.stringify({ shipper_address: shipperAddress }),
-  });
-}
-
 export async function markInTransit(
   shipmentId: string,
   driverAddress: string
