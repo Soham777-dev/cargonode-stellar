@@ -4,6 +4,8 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 
 const NETWORK = process.env.STELLAR_NETWORK || "testnet";
 
+// Force redeploy: 2026-07-27
+
 const requireEnv = (name: string): string => {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required env var: ${name}`);
