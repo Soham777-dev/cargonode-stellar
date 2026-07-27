@@ -114,20 +114,19 @@ export default function NewShipmentPage() {
 
       setStatus("Please sign the transaction in your wallet...");
 
-      // Step 2: Sign XDR with Freighter (skip if dev mode)
-      let txHash: string | null = null;
-      if (data.xdr) {
-        const signedXdr = await sign(data.xdr);
-
-        setStatus("Submitting transaction to Stellar...");
-
-        // Step 3: Submit signed transaction
-        const result = await submitSignedTx(data.shipment_id, signedXdr, "created");
-        txHash = result.tx_hash;
-        setStatus(`Shipment created! Tx: ${txHash.slice(0, 12)}...`);
-      } else {
-        setStatus("Shipment created! (Dev mode — contract not deployed)");
+      // Step 2: Sign XDR with Freighter
+      if (!data.xdr) {
+        throw new Error("Failed to build blockchain transaction. Your account may need XLM for fees. Click 'Get Test Tokens' above.");
       }
+
+      const signedXdr = await sign(data.xdr);
+
+      setStatus("Submitting transaction to Stellar...");
+
+      // Step 3: Submit signed transaction
+      const result = await submitSignedTx(data.shipment_id, signedXdr, "created");
+      const txHash = result.tx_hash;
+      setStatus(`Shipment created! Tx: ${txHash.slice(0, 12)}...`);
 
       setSuccess(true);
 

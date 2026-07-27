@@ -17,12 +17,12 @@ import { ShipmentDetailSkeleton } from "@/components/Skeleton";
 
 const STATUS_STEPS: Record<string, number> = {
   pending: 0,
-  created: 1,
-  accepted: 2,
-  in_transit: 3,
-  delivered: 4,
-  confirmed: 5,
-  completed: 6,
+  created: 0,
+  accepted: 1,
+  in_transit: 2,
+  delivered: 3,
+  confirmed: 4,
+  completed: 5,
   cancelled: -1,
 };
 
