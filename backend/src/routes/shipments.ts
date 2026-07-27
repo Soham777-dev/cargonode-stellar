@@ -321,7 +321,13 @@ router.post("/", writeRateLimit, async (req, res) => {
       
       // Build transaction with both XLM transfer and contract invocation
       const contract = new StellarSdk.Contract(config.contractId);
-      const nativeToken = new StellarSdk.Contract("CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC");
+      
+      // Native XLM SAC address depends on network
+      const nativeTokenAddress = config.networkPassphrase === StellarSdk.Networks.PUBLIC
+        ? "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA" // mainnet
+        : "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"; // testnet
+      
+      const nativeToken = new StellarSdk.Contract(nativeTokenAddress);
       const sourceAccount = await rpc.getAccount(body.shipper_address);
 
       const txBuilder = new StellarSdk.TransactionBuilder(sourceAccount, {
