@@ -135,7 +135,16 @@ export default function NewShipmentPage() {
         router.push(`/shipments/${data.shipment_id}`);
       }, 2000);
     } catch (err: any) {
-      setStatus(`Error: ${err.message}`);
+      const errorMsg = err.detail 
+        ? `${err.message}: ${err.detail}` 
+        : err.message || "Failed to create shipment";
+      
+      setStatus(`Error: ${errorMsg}`);
+      
+      if (err.suggestion) {
+        setStatus(`Error: ${errorMsg}. ${err.suggestion}`);
+      }
+      
       setSuccess(false);
     } finally {
       setLoading(false);
