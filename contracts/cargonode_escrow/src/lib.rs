@@ -100,8 +100,9 @@ impl CargoNodeEscrow {
         env.storage().instance().set(&DataKey::Deployer, &deployer);
     }
 
-    /// Create a new shipment with escrowed payment using native XLM.
-    /// Shipper calls this to lock XLM into the contract.
+    /// Create a new shipment record.
+    /// NOTE: XLM transfer happens in the transaction before this function is called.
+    /// This function only records the shipment details.
     pub fn create_shipment(
         env: Env,
         shipper: Address,
@@ -122,20 +123,8 @@ impl CargoNodeEscrow {
             return Err(Error::AlreadyExists);
         }
 
-        // For native XLM, we use the Stellar Asset Contract (SAC) for native token
-        // The XLM SAC address is derived deterministically
-        let native_token = soroban_sdk::token::Client::new(
-            &env,
-            &Address::from_string(&String::from_str(
-                &env,
-                "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-            )),
-        );
-
-        // Transfer XLM from shipper to contract
-        native_token.transfer(&shipper, &env.current_contract_address(), &amount);
-
         // Create shipment record
+        // The XLM has already been transferred to contract in the same transaction
         let shipment = Shipment {
             shipper: shipper.clone(),
             driver: driver.clone(),

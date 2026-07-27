@@ -318,15 +318,34 @@ router.post("/", writeRateLimit, async (req, res) => {
 
     try {
       const amountBigInt = parseAmountToBigInt(body.amount);
-      const txBuilder = await buildContractInvocation(
-        body.shipper_address,
-        "create_shipment",
-        [
+      
+      // Build transaction with both XLM transfer and contract invocation
+      const contract = new StellarSdk.Contract(config.contractId);
+      const nativeToken = new StellarSdk.Contract("CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC");
+      const sourceAccount = await rpc.getAccount(body.shipper_address);
+
+      const txBuilder = new StellarSdk.TransactionBuilder(sourceAccount, {
+        fee: StellarSdk.BASE_FEE,
+        networkPassphrase: config.networkPassphrase,
+      })
+      // First: Transfer XLM from shipper to contract (escrow)
+      .addOperation(
+        nativeToken.call(
+          "transfer",
+          toAddress(body.shipper_address),
+          toAddress(config.contractId),
+          toI128(amountBigInt)
+        )
+      )
+      // Second: Record shipment in contract
+      .addOperation(
+        contract.call(
+          "create_shipment",
           toAddress(body.shipper_address),
           toAddress(body.driver_address),
           toI128(amountBigInt),
-          toStringScVal(shipmentId),
-        ]
+          toStringScVal(shipmentId)
+        )
       );
 
       const xdr = await simulateAndAssemble(txBuilder);
