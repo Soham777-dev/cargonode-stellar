@@ -337,12 +337,16 @@ router.post("/", writeRateLimit, async (req, res) => {
         status: "created",
       });
     } catch (xdrErr: any) {
-      // If XDR build fails (e.g. unfunded account on testnet), return DB-only
-      log.warn({ err: xdrErr.message }, "XDR build failed — returning DB-only shipment");
-      res.json({
-        shipment_id: shipmentId,
-        xdr: null,
-        status: "created",
+      // If XDR build fails (e.g. unfunded account on testnet), return error to frontend
+      log.error({ err: xdrErr.message, shipper: body.shipper_address }, "XDR build failed");
+      
+      // Delete the shipment since we can't create the blockchain transaction
+      await pool.query('DELETE FROM shipments WHERE shipment_id = $1', [shipmentId]);
+      
+      return res.status(400).json({ 
+        error: "Failed to build blockchain transaction", 
+        detail: xdrErr.message,
+        suggestion: "Ensure your account has XLM for transaction fees and USDC token trustline"
       });
     }
   } catch (err) {
