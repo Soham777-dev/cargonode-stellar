@@ -34,20 +34,21 @@ interface SystemMetrics {
 export default function AnalyticsPage() {
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [eventsLogs, setEventLogs] = useState<any[]>([]);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = async (signal?: AbortSignal) => {
     try {
       const metricsUrl = API_BASE.replace(/\/api\/?$/, "/api/metrics");
-      const res = await fetch(metricsUrl);
+      const res = await fetch(metricsUrl, { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setMetrics(data);
-      setError(null);
     } catch (err: any) {
+      // Ignore aborted requests
+      if (err.name === 'AbortError') return;
+      
       // Fallback mock metrics if API is remote or offline
       setMetrics({
         status: "healthy",
@@ -83,15 +84,20 @@ export default function AnalyticsPage() {
   };
 
   useEffect(() => {
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 5000);
+    const abortController = new AbortController();
+    
+    fetchMetrics(abortController.signal);
+    const interval = setInterval(() => fetchMetrics(abortController.signal), 5000);
 
     try {
       const logs = JSON.parse(localStorage.getItem("cargonode_analytics_logs") || "[]");
       setEventLogs(logs.reverse().slice(0, 15));
     } catch (e) {}
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      abortController.abort(); // Cancel any in-flight requests
+    };
   }, []);
 
   return (
