@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-6">
         <div>
           <h1 className="text-3xl font-bold text-secondary flex items-center gap-2">
-            <span>📊</span> Production System & Analytics Monitoring
+            <span>📈</span> Production System & Analytics Monitoring
           </h1>
           <p className="text-sm text-gray-600 mt-1">
             Real-time telemetry, server health metrics, database connection pool, and Soroban contract telemetry
