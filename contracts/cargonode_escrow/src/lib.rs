@@ -100,9 +100,8 @@ impl CargoNodeEscrow {
         env.storage().instance().set(&DataKey::Deployer, &deployer);
     }
 
-    /// Create a new shipment record.
-    /// NOTE: XLM transfer happens in the transaction before this function is called.
-    /// This function only records the shipment details.
+    /// Create a new shipment with escrowed XLM payment.
+    /// Contract pulls XLM from shipper into escrow.
     pub fn create_shipment(
         env: Env,
         shipper: Address,
@@ -123,8 +122,18 @@ impl CargoNodeEscrow {
             return Err(Error::AlreadyExists);
         }
 
+        // Transfer native XLM from shipper to contract (escrow)
+        // Native XLM token contract address - deterministic on each network
+        let native_token = soroban_sdk::token::Client::new(
+            &env,
+            &Address::from_string(&String::from_str(
+                &env,
+                "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+            )),
+        );
+        native_token.transfer(&shipper, &env.current_contract_address(), &amount);
+
         // Create shipment record
-        // The XLM has already been transferred to contract in the same transaction
         let shipment = Shipment {
             shipper: shipper.clone(),
             driver: driver.clone(),
