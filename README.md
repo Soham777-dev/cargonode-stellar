@@ -8,6 +8,7 @@
 
 ## Live Demo
 
+- **Demo Video**: [Watch Demo Video](https://drive.google.com/file/d/1eInCmgWkOmGOQhgsy0wKFvB8Vga69fRD/view?usp=sharing)
 - **Frontend**: [https://cargonode-stellar.vercel.app/](https://cargonode-stellar.vercel.app/) (testnet)
 - **Backend API**: [https://cargonode-stellar-production.up.railway.app](https://cargonode-stellar-production.up.railway.app)
 - **Escrow Contract**: [`CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH`](https://stellar.expert/explorer/testnet/contract/CAI52UIAHEMT3SNQ2EXOJKHHC2PAGLGURZYNL6HFZJ6LL5KDQFURBQUH)
@@ -15,10 +16,9 @@
 
 ## Level 4 Submission Proofs
 
-- 👥 **10+ User Wallet Interactions Proof**: [PROOF_OF_USERS.md](PROOF_OF_USERS.md)
-- 💬 **User Feedback Summary**: [FEEDBACK_SUMMARY.md](FEEDBACK_SUMMARY.md)
+- 👥 **10+ User Wallet Interactions & Feedback Proof**: [View User Proof & Feedback Sheet](https://docs.google.com/spreadsheets/d/1eYeqTOjWnP-3ISxm5_UtwLRayE0TxMxXYJG7B3v0ioE/edit?usp=sharing)
 - 📊 **Monitoring & Analytics**: Pino structured backend logging + [analytics.ts](frontend/src/lib/analytics.ts)
-- 🎥 **Demo Video Link**: *Include live video URL here upon submission*
+- 🎥 **Demo Video Link**: [Watch Demo Video](https://drive.google.com/file/d/1eInCmgWkOmGOQhgsy0wKFvB8Vga69fRD/view?usp=sharing)
 
 ### Product Screenshots
 
